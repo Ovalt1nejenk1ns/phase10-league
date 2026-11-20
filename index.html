@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Phase 10 Scorekeeper</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800;900&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="bar">
+  <div class="wrap">
+    <div class="brand"><span class="pips" aria-hidden="true"><span style="background:var(--red)"></span><span style="background:var(--blue)"></span><span style="background:var(--green)"></span><span style="background:var(--yellow)"></span></span>Kitchen Table Phase 10 League</div>
+    <nav aria-label="Sections">
+      <a href="#play">Scorekeeper</a>
+      <a href="#standings">Standings</a>
+      <a href="#past">Past games</a>
+      <a href="#rules">Rules</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap" id="play">
+
+  <!-- 1. Setup: shown when there's no game in progress -->
+  <section id="setup" class="setup hidden" style="border-top:0">
+    <div>
+      <div class="eyebrow">New game</div>
+      <h2>Who's playing?</h2>
+    </div>
+    <div class="field">
+      <label for="gameLabel">Game name</label>
+      <input type="text" id="gameLabel" placeholder="Game 2" maxlength="40">
+    </div>
+    <div class="field">
+      <label>Players, in seating order</label>
+      <div class="namelist" id="nameList"></div>
+      <button class="btn small" id="addName" type="button">+ Add player</button>
+    </div>
+    <p class="err" id="setupErr" role="alert"></p>
+    <div class="row"><button class="btn primary" id="startGame" type="button">Deal 'em</button></div>
+  </section>
+
+  <!-- 2. Game: hand entry + live results -->
+  <div id="game" class="hidden">
+    <div class="hero" style="padding-bottom:24px">
+      <div>
+        <div class="eyebrow" id="gameEyebrow"></div>
+        <h1 id="headline"></h1>
+        <p id="subline"></p>
+      </div>
+      <div class="cardstack" aria-hidden="true" id="heroCard">
+        <div class="ghost g1"></div><div class="ghost g2"></div>
+        <div class="bigcard">
+          <div class="corner tl" data-n></div><div class="center" data-n></div><div class="corner br" data-n></div>
+          <div class="ribbon" id="heroRibbon"></div>
+        </div>
+      </div>
+    </div>
+
+    <section id="entrySection">
+      <div class="sechead">
+        <h2 id="entryTitle">Hand 1</h2>
+        <p>Tap the phase button if they laid it down. Enter the points left in their hand. Whoever went out gets 0.</p>
+      </div>
+      <form id="entryForm" class="entry" novalidate>
+        <div id="entryRows" class="entry"></div>
+        <p class="err" id="entryErr" role="alert"></p>
+        <div class="row">
+          <button class="btn primary" type="submit">Save hand</button>
+          <button class="btn" type="button" id="undoBtn">Undo last hand</button>
+        </div>
+      </form>
+    </section>
+
+    <section id="overSection" class="hidden">
+      <div class="banner" id="banner"></div>
+    </section>
+
+    <section id="standings">
+      <div class="sechead">
+        <h2>Standings</h2>
+        <p>Most phases completed leads. A tie on phases goes to fewer points.</p>
+      </div>
+      <div class="podium" id="podium"></div>
+    </section>
+
+    <section id="ladderSection">
+      <div class="sechead">
+        <h2>Hand by hand</h2>
+        <p>Each card is the phase attempted. Solid means made, dashed means missed. Small number is points.</p>
+      </div>
+      <div class="ladder-scroll"><div class="ladder" id="ladder"></div></div>
+    </section>
+
+    <section id="raceSection">
+      <div class="sechead">
+        <h2>The points race</h2>
+        <p>Running total of points after each hand. Lower is better.</p>
+      </div>
+      <div class="chartbox">
+        <div class="keyrow" id="chartKey"></div>
+        <svg id="chart" viewBox="0 0 900 360" role="img" aria-label="Line chart of running points by hand"></svg>
+      </div>
+    </section>
+
+    <section>
+      <div class="sechead"><h2>Game tools</h2><p>The game saves in this browser as you go. Export a CSV to keep it for good.</p></div>
+      <div class="row">
+        <button class="btn" type="button" id="exportBtn">Download CSV</button>
+        <button class="btn" type="button" id="copyBtn">Copy CSV</button>
+        <button class="btn danger" type="button" id="newBtn">New game</button>
+      </div>
+    </section>
+  </div>
+
+  <section id="past">
+    <div class="sechead"><h2>Past games</h2><p>Results pages built with the Python builder in this repo.</p></div>
+    <ul class="pastlist">
+      <li><a href="results/game-1.html">Game 1: Justin wins on the tiebreaker</a></li>
+    </ul>
+  </section>
+
+  <section id="rules">
+    <div class="sechead">
+      <h2>League rules</h2>
+      <p>The quick version.</p>
+    </div>
+    <div class="rules">
+      <div>
+        <h3>The 10 phases</h3>
+        <ol class="phaselist" id="phaseList"></ol>
+      </div>
+      <div>
+        <h3>Scoring</h3>
+        <table class="scoretable num">
+          <tbody>
+            <tr><td>Cards 1–9</td><td>5 each</td></tr>
+            <tr><td>Cards 10–12</td><td>10 each</td></tr>
+            <tr><td>Skip</td><td>15</td></tr>
+            <tr><td>Wild</td><td>25</td></tr>
+          </tbody>
+        </table>
+        <ul>
+          <li><strong>Set:</strong> same number, any colors.</li>
+          <li><strong>Run:</strong> numbers in order, any colors. No wrapping from 12 to 1.</li>
+          <li>One phase per hand. Lay it down, then hit on any laid-down phase.</li>
+          <li>First to finish Phase 10 wins. Ties go to fewer points.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">The official site of the Kitchen Table Phase 10 League. A family league, not affiliated with Mattel, which owns the Phase 10 name.</div>
+</footer>
+
+<div class="dialog hidden" id="confirmDlg" role="dialog" aria-modal="true" aria-labelledby="confirmText">
+  <div class="panel">
+    <p id="confirmText" style="margin:0;font-weight:700"></p>
+    <div class="row"><button class="btn primary" id="confirmYes" type="button">Yes</button><button class="btn" id="confirmNo" type="button">Cancel</button></div>
+  </div>
+</div>
+<div class="toast hidden" id="toast" role="status"></div>
+
+<script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,43 @@
+Hand,Player,Made phase?,Points
+1,liz,TRUE,5
+1,Peyton ,TRUE,15
+1,Justin ,TRUE,
+2,liz,TRUE,
+2,Peyton ,FALSE,75
+2,Justin ,TRUE,10
+3,liz,FALSE,85
+3,Peyton ,TRUE,20
+3,Justin ,TRUE,
+4,liz,FALSE,85
+4,Peyton ,TRUE,10
+4,Justin ,TRUE,
+5,liz,TRUE,
+5,Peyton ,TRUE,5
+5,Justin ,FALSE,70
+6,liz,TRUE,
+6,Peyton ,TRUE,10
+6,Justin ,TRUE,5
+7,liz,TRUE,5
+7,Peyton ,TRUE,
+7,Justin ,FALSE,60
+8,liz,FALSE,80
+8,Peyton ,FALSE,80
+8,Justin ,TRUE,
+9,liz,TRUE,
+9,Peyton ,FALSE,85
+9,Justin ,TRUE,10
+,liz,FALSE,80
+,Peyton ,TRUE,15
+,Justin ,TRUE,
+,liz,TRUE,
+,Peyton ,TRUE,10
+,Justin ,FALSE,55
+,liz,TRUE,
+,Peyton ,TRUE,10
+,Justin ,TRUE,5
+,liz,TRUE,
+,Peyton ,TRUE,10
+,Justin ,TRUE,10
+,,FALSE,
+,,FALSE,
+,,FALSE,

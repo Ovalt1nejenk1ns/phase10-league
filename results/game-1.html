@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kitchen Table Phase 10 League · Game 1</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800;900&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+/* Layout idea: a league "official site" built from the game's own objects — numbered cards in four colors.
+   Scoreboard-condensed display type, plain hyperlegible body, one big card as the hero. */
+:root{
+  --paper:#f4f2ee;
+  --ink:#1b1d24;
+  --muted:#5d6170;
+  --line:#d9d5cd;
+  --card:#ffffff;
+  --red:#d7263d;
+  --blue:#1f5fbf;
+  --green:#1b8a4b;
+  --yellow:#f2b705;
+  --yellow-ink:#8f6600;
+  --orange:#d9661a;--purple:#7b3fbf;--teal:#0f8a8a;
+  --font-display:"Big Shoulders Display","Arial Narrow",Impact,sans-serif;
+  --font-body:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --paper:#15171d;--ink:#eceae6;--muted:#a3a7b4;--line:#2d313b;--card:#1e2129;
+    --red:#ff5a6e;--blue:#5b97f2;--green:#3fc07a;--yellow:#ffc933;--yellow-ink:#ffc933;--orange:#ff9a52;--purple:#b18cf2;--teal:#3cc7c7;color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#15171d;--ink:#eceae6;--muted:#a3a7b4;--line:#2d313b;--card:#1e2129;
+  --red:#ff5a6e;--blue:#5b97f2;--green:#3fc07a;--yellow:#ffc933;--yellow-ink:#ffc933;--orange:#ff9a52;--purple:#b18cf2;--teal:#3cc7c7;color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--font-body);font-size:17px;line-height:1.5}
+a{color:var(--blue)}
+a:focus-visible,button:focus-visible{outline:3px solid var(--yellow);outline-offset:2px}
+.wrap{max-width:1040px;margin:0 auto;padding:0 20px}
+h1,h2,h3{font-family:var(--font-display);text-transform:uppercase;letter-spacing:.01em;line-height:.95;margin:0;text-wrap:balance}
+h2{font-size:clamp(34px,6vw,52px);font-weight:900}
+.num{font-variant-numeric:tabular-nums}
+
+/* top bar */
+.bar{border-bottom:1px solid var(--line)}
+.bar .wrap{display:flex;align-items:center;justify-content:space-between;gap:16px;padding-top:14px;padding-bottom:14px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;font-family:var(--font-display);font-weight:800;font-size:22px;text-transform:uppercase;letter-spacing:.02em}
+.pips{display:flex;gap:3px}
+.pips span{width:10px;height:16px;border-radius:2px}
+nav{display:flex;gap:18px;flex-wrap:wrap}
+nav a{color:var(--muted);text-decoration:none;font-weight:700;font-size:15px}
+nav a:hover{color:var(--ink)}
+
+/* hero */
+.hero{display:grid;grid-template-columns:1.3fr 1fr;gap:40px;align-items:center;padding:48px 0 40px}
+.eyebrow{font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.12em;font-size:13px;margin-bottom:14px}
+.hero h1{font-size:clamp(54px,10vw,104px);font-weight:900}
+.hero h1 em{font-style:normal;color:var(--blue)}
+.hero p{max-width:34em;color:var(--muted);font-size:19px;margin:18px 0 0}
+.hero p strong{color:var(--ink)}
+.bigcard{justify-self:center;width:min(260px,70vw);aspect-ratio:5/7;border-radius:18px;background:var(--champ);position:relative;
+  box-shadow:0 2px 0 rgba(0,0,0,.08),0 18px 40px -18px rgba(20,40,90,.55);transform:rotate(-4deg);color:#fff;overflow:hidden;
+  animation:deal .7s cubic-bezier(.2,.8,.2,1) both}
+.bigcard::before{content:"";position:absolute;inset:14px;border:3px solid rgba(255,255,255,.85);border-radius:10px}
+.bigcard .center{position:absolute;inset:0;display:grid;place-items:center;font-family:var(--font-display);font-weight:900;font-size:150px;line-height:1}
+.bigcard .corner{position:absolute;font-family:var(--font-display);font-weight:900;font-size:30px;line-height:1}
+.bigcard .tl{top:24px;left:26px}.bigcard .br{bottom:24px;right:26px;transform:rotate(180deg)}
+.bigcard .ribbon{position:absolute;left:0;right:0;bottom:56px;text-align:center;font-family:var(--font-display);font-weight:800;font-size:20px;letter-spacing:.14em;text-transform:uppercase}
+.behind{position:absolute}
+.cardstack{position:relative;justify-self:center}
+.cardstack .ghost{position:absolute;inset:0;border-radius:18px}
+.cardstack .g1{background:var(--red);transform:rotate(7deg) translate(18px,4px)}
+.cardstack .g2{background:var(--yellow);transform:rotate(2deg) translate(8px,2px)}
+@keyframes deal{from{transform:translateY(30px) rotate(-12deg);opacity:.0}to{transform:rotate(-4deg);opacity:1}}
+@media (prefers-reduced-motion:reduce){.bigcard{animation:none}}
+
+section{padding:44px 0;border-top:1px solid var(--line)}
+.sechead{display:flex;justify-content:space-between;align-items:end;gap:16px;flex-wrap:wrap;margin-bottom:24px}
+.sechead p{margin:0;color:var(--muted);max-width:30em}
+
+/* standings */
+.podium{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.pcard{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px;display:grid;gap:14px;position:relative;overflow:hidden}
+.pcard::before{content:"";position:absolute;left:0;top:0;bottom:0;width:8px;background:var(--c)}
+.pcard .place{font-family:var(--font-display);font-weight:900;font-size:64px;line-height:.8;color:var(--c)}
+.pcard .name{font-family:var(--font-display);font-weight:800;font-size:34px;text-transform:uppercase;line-height:1}
+.pcard .tag{display:inline-block;font-size:13px;font-weight:700;padding:3px 9px;border-radius:999px;background:var(--c);color:#fff;justify-self:start}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:6px 12px;font-size:15px}
+.stats dt{color:var(--muted)}
+.stats dd{margin:0;font-weight:700;text-align:right}
+.tiebreak{margin-top:18px;padding:14px 16px;border-left:4px solid var(--yellow);background:var(--card);border-radius:0 10px 10px 0;max-width:46em}
+
+/* phase ladder */
+.ladder-scroll{overflow-x:auto;padding-bottom:6px}
+.ladder{display:grid;grid-template-columns:96px repeat(var(--hands),minmax(44px,1fr));gap:6px;min-width:calc(110px + var(--hands) * 50px);align-items:center}
+.ladder .hh{font-size:12px;color:var(--muted);text-align:center;font-weight:700}
+.ladder .who{font-family:var(--font-display);font-weight:800;font-size:22px;text-transform:uppercase}
+.chip{aspect-ratio:5/7;border-radius:7px;display:grid;place-items:center;position:relative;font-family:var(--font-display);font-weight:900;font-size:22px;line-height:1}
+.chip.made{background:var(--c);color:#fff}
+.chip.miss{border:2px dashed var(--c);color:var(--c);opacity:.75}
+.chip small{position:absolute;bottom:3px;left:0;right:0;text-align:center;font-family:var(--font-body);font-weight:700;font-size:10px;opacity:.9}
+.legend{display:flex;gap:18px;flex-wrap:wrap;margin-top:14px;font-size:14px;color:var(--muted);align-items:center}
+.legend .chip{width:22px;font-size:12px}
+
+/* chart */
+.chartbox{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 12px 8px}
+.chartbox svg{width:100%;height:auto;display:block}
+.chartbox .lbl{font-weight:700}
+.chartbox text{font-family:var(--font-body);font-size:12px;fill:var(--muted)}
+.keyrow{display:flex;gap:18px;flex-wrap:wrap;padding:0 8px 10px;font-weight:700;font-size:15px}
+.keyrow span::before{content:"";display:inline-block;width:14px;height:4px;border-radius:2px;background:var(--c);vertical-align:middle;margin-right:7px}
+
+/* awards */
+.awards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+.award{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px}
+.award .big{font-family:var(--font-display);font-weight:900;font-size:48px;line-height:1;color:var(--c)}
+.award h3{font-size:22px;margin:8px 0 6px}
+.award p{margin:0;color:var(--muted);font-size:15px}
+
+/* rules */
+.rules{display:grid;grid-template-columns:1.2fr 1fr;gap:28px}
+.phaselist{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.phaselist li{display:grid;grid-template-columns:44px 1fr;gap:12px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:6px 12px 6px 6px}
+.phaselist .n{aspect-ratio:5/7;width:32px;border-radius:5px;display:grid;place-items:center;color:#fff;font-family:var(--font-display);font-weight:900;font-size:19px}
+.scoretable{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.scoretable td{padding:10px 14px;border-bottom:1px solid var(--line)}
+.scoretable tr:last-child td{border-bottom:0}
+.scoretable td:last-child{text-align:right;font-weight:700}
+.rules h3{font-size:26px;margin-bottom:12px}
+.rules ul{padding-left:20px;margin:16px 0 0}
+.rules li{margin-bottom:6px}
+.links{display:flex;gap:12px;flex-wrap:wrap;margin-top:20px}
+.btn{display:inline-block;padding:11px 16px;border-radius:10px;font-weight:700;text-decoration:none;border:2px solid var(--ink);color:var(--ink)}
+.btn.primary{background:var(--ink);color:var(--paper)}
+
+footer{border-top:1px solid var(--line);padding:26px 0 40px;color:var(--muted);font-size:14px}
+
+@media (max-width:760px){
+  .hero{grid-template-columns:1fr;padding-top:32px}
+  .cardstack{order:-1}
+  .bigcard{width:180px}
+  .bigcard .center{font-size:104px}
+  .podium{grid-template-columns:1fr}
+  .rules{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<header class="bar">
+  <div class="wrap">
+    <div class="brand"><span class="pips" aria-hidden="true"><span style="background:var(--red)"></span><span style="background:var(--blue)"></span><span style="background:var(--green)"></span><span style="background:var(--yellow)"></span></span>Kitchen Table Phase 10 League</div>
+    <nav aria-label="Sections">
+      <a href="#standings">Standings</a>
+      <a href="#ladder">Hand by hand</a>
+      <a href="#awards">Awards</a>
+      <a href="#rules">Rules</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="hero">
+    <div>
+      <div class="eyebrow">Official results · Game 1 · 13 hands</div>
+      <h1><em style="color:var(--blue)">Justin</em> takes the crown on the tiebreaker</h1>
+      <p>Justin and Peyton both completed 10 phases, so the title went to the lowest score. Justin finished with <strong>225 points</strong> to Peyton's 345.</p>
+    </div>
+    <div class="cardstack" aria-hidden="true" style="--champ:var(--blue)">
+      <div class="ghost g1"></div><div class="ghost g2"></div>
+      <div class="bigcard">
+        <div class="corner tl">10</div>
+        <div class="center">10</div>
+        <div class="corner br">10</div>
+        <div class="ribbon">Champion</div>
+      </div>
+    </div>
+  </div>
+
+  <section id="standings">
+    <div class="sechead">
+      <h2>Final standings</h2>
+      <p>Most phases completed wins. A tie on phases goes to fewer points.</p>
+    </div>
+    <div class="podium">
+      <article class="pcard" style="--c:var(--blue)">
+        <div style="display:flex;justify-content:space-between;align-items:end;gap:10px">
+          <div class="name">Justin</div><div class="place">1st</div>
+        </div>
+        <span class="tag">Finished Phase 10</span>
+        <dl class="stats num">
+          <dt>Phases completed</dt><dd>10 of 10</dd>
+          <dt>Total points</dt><dd>225</dd>
+          <dt>Phases missed</dt><dd>3</dd>
+        </dl>
+      </article>
+      <article class="pcard" style="--c:var(--red)">
+        <div style="display:flex;justify-content:space-between;align-items:end;gap:10px">
+          <div class="name">Peyton</div><div class="place">2nd</div>
+        </div>
+        <span class="tag">Finished Phase 10</span>
+        <dl class="stats num">
+          <dt>Phases completed</dt><dd>10 of 10</dd>
+          <dt>Total points</dt><dd>345</dd>
+          <dt>Phases missed</dt><dd>3</dd>
+        </dl>
+      </article>
+      <article class="pcard" style="--c:var(--green)">
+        <div style="display:flex;justify-content:space-between;align-items:end;gap:10px">
+          <div class="name">Liz</div><div class="place">3rd</div>
+        </div>
+        <span class="tag">Stopped on Phase 10</span>
+        <dl class="stats num">
+          <dt>Phases completed</dt><dd>9 of 10</dd>
+          <dt>Total points</dt><dd>340</dd>
+          <dt>Phases missed</dt><dd>4</dd>
+        </dl>
+      </article>
+    </div>
+    <div class="tiebreak"><strong>How the tiebreaker played out:</strong> Justin and Peyton both completed 10 phases, so points decided it. Justin's 120-point cushion did the job.</div>
+  </section>
+
+  <section id="ladder">
+    <div class="sechead">
+      <h2>Hand by hand</h2>
+      <p>Each card is the phase that player attempted. Solid means they made it. Dashed means they missed and tried again. Small number is points taken that hand.</p>
+    </div>
+    <div class="ladder-scroll"><div class="ladder" style="--hands:13">
+      <div></div>
+<div class="hh">Hand 1</div><div class="hh">Hand 2</div><div class="hh">Hand 3</div><div class="hh">Hand 4</div><div class="hh">Hand 5</div><div class="hh">Hand 6</div><div class="hh">Hand 7</div><div class="hh">Hand 8</div><div class="hh">Hand 9</div><div class="hh">Hand 10</div><div class="hh">Hand 11</div><div class="hh">Hand 12</div><div class="hh">Hand 13</div>
+      <div class="who" style="color:var(--blue)">Justin</div>
+      <div class="chip made" style="--c:var(--blue)" title="Hand 1: Phase 1 made, 0 points">1<small>0</small></div>
+      <div class="chip made" style="--c:var(--blue)" title="Hand 2: Phase 2 made, 10 points">2<small>10</small></div>
+      <div class="chip made" style="--c:var(--blue)" title="Hand 3: Phase 3 made, 0 points">3<small>0</small></div>
+      <div class="chip made" style="--c:var(--blue)" title="Hand 4: Phase 4 made, 0 points">4<small>0</small></div>
+      <div class="chip miss" style="--c:var(--blue)" title="Hand 5: Phase 5 missed, 70 points">5<small>70</small></div>
+      <div class="chip made" style="--c:var(--blue)" title="Hand 6: Phase 5 made, 5 points">5<small>5</small></div>
+      <div class="chip miss" style="--c:var(--blue)" title="Hand 7: Phase 6 missed, 60 points">6<small>60</small></div>
+      <div class="chip made" style="--c:var(--blue)" title="Hand 8: Phase 6 made, 0 points">6<small>0</small></div>
+      <div class="chip made" style="--c:var(--blue)" title="Hand 9: Phase 7 made, 10 points">7<small>10</small></div>
+      <div class="chip made" style="--c:var(--blue)" title="Hand 10: Phase 8 made, 0 points">8<small>0</small></div>
+      <div class="chip miss" style="--c:var(--blue)" title="Hand 11: Phase 9 missed, 55 points">9<small>55</small></div>
+      <div class="chip made" style="--c:var(--blue)" title="Hand 12: Phase 9 made, 5 points">9<small>5</small></div>
+      <div class="chip made" style="--c:var(--blue)" title="Hand 13: Phase 10 made, 10 points">10<small>10</small></div>
+      <div class="who" style="color:var(--red)">Peyton</div>
+      <div class="chip made" style="--c:var(--red)" title="Hand 1: Phase 1 made, 15 points">1<small>15</small></div>
+      <div class="chip miss" style="--c:var(--red)" title="Hand 2: Phase 2 missed, 75 points">2<small>75</small></div>
+      <div class="chip made" style="--c:var(--red)" title="Hand 3: Phase 2 made, 20 points">2<small>20</small></div>
+      <div class="chip made" style="--c:var(--red)" title="Hand 4: Phase 3 made, 10 points">3<small>10</small></div>
+      <div class="chip made" style="--c:var(--red)" title="Hand 5: Phase 4 made, 5 points">4<small>5</small></div>
+      <div class="chip made" style="--c:var(--red)" title="Hand 6: Phase 5 made, 10 points">5<small>10</small></div>
+      <div class="chip made" style="--c:var(--red)" title="Hand 7: Phase 6 made, 0 points">6<small>0</small></div>
+      <div class="chip miss" style="--c:var(--red)" title="Hand 8: Phase 7 missed, 80 points">7<small>80</small></div>
+      <div class="chip miss" style="--c:var(--red)" title="Hand 9: Phase 7 missed, 85 points">7<small>85</small></div>
+      <div class="chip made" style="--c:var(--red)" title="Hand 10: Phase 7 made, 15 points">7<small>15</small></div>
+      <div class="chip made" style="--c:var(--red)" title="Hand 11: Phase 8 made, 10 points">8<small>10</small></div>
+      <div class="chip made" style="--c:var(--red)" title="Hand 12: Phase 9 made, 10 points">9<small>10</small></div>
+      <div class="chip made" style="--c:var(--red)" title="Hand 13: Phase 10 made, 10 points">10<small>10</small></div>
+      <div class="who" style="color:var(--green)">Liz</div>
+      <div class="chip made" style="--c:var(--green)" title="Hand 1: Phase 1 made, 5 points">1<small>5</small></div>
+      <div class="chip made" style="--c:var(--green)" title="Hand 2: Phase 2 made, 0 points">2<small>0</small></div>
+      <div class="chip miss" style="--c:var(--green)" title="Hand 3: Phase 3 missed, 85 points">3<small>85</small></div>
+      <div class="chip miss" style="--c:var(--green)" title="Hand 4: Phase 3 missed, 85 points">3<small>85</small></div>
+      <div class="chip made" style="--c:var(--green)" title="Hand 5: Phase 3 made, 0 points">3<small>0</small></div>
+      <div class="chip made" style="--c:var(--green)" title="Hand 6: Phase 4 made, 0 points">4<small>0</small></div>
+      <div class="chip made" style="--c:var(--green)" title="Hand 7: Phase 5 made, 5 points">5<small>5</small></div>
+      <div class="chip miss" style="--c:var(--green)" title="Hand 8: Phase 6 missed, 80 points">6<small>80</small></div>
+      <div class="chip made" style="--c:var(--green)" title="Hand 9: Phase 6 made, 0 points">6<small>0</small></div>
+      <div class="chip miss" style="--c:var(--green)" title="Hand 10: Phase 7 missed, 80 points">7<small>80</small></div>
+      <div class="chip made" style="--c:var(--green)" title="Hand 11: Phase 7 made, 0 points">7<small>0</small></div>
+      <div class="chip made" style="--c:var(--green)" title="Hand 12: Phase 8 made, 0 points">8<small>0</small></div>
+      <div class="chip made" style="--c:var(--green)" title="Hand 13: Phase 9 made, 0 points">9<small>0</small></div>
+    </div></div>
+    <div class="legend">
+      <span style="display:flex;gap:8px;align-items:center"><span class="chip made" style="--c:var(--muted)">4</span> Made the phase</span>
+      <span style="display:flex;gap:8px;align-items:center"><span class="chip miss" style="--c:var(--muted)">4</span> Missed, repeats next hand</span>
+    </div>
+  </section>
+
+  <section id="race">
+    <div class="sechead">
+      <h2>The points race</h2>
+      <p>Running total of points after each hand. Lower is better.</p>
+    </div>
+    <div class="chartbox">
+      <div class="keyrow"><span style="--c:var(--blue)">Justin</span><span style="--c:var(--red)">Peyton</span><span style="--c:var(--green)">Liz</span></div>
+      <svg viewBox="0 0 900 360" role="img" aria-label="Line chart of cumulative points by hand">
+        <line x1="48" x2="790" y1="320.0" y2="320.0" stroke="var(--line)" stroke-width="1"/>
+        <text x="40" y="324.0" text-anchor="end">0</text>
+        <line x1="48" x2="790" y1="276.6" y2="276.6" stroke="var(--line)" stroke-width="1"/>
+        <text x="40" y="280.6" text-anchor="end">50</text>
+        <line x1="48" x2="790" y1="233.1" y2="233.1" stroke="var(--line)" stroke-width="1"/>
+        <text x="40" y="237.1" text-anchor="end">100</text>
+        <line x1="48" x2="790" y1="189.7" y2="189.7" stroke="var(--line)" stroke-width="1"/>
+        <text x="40" y="193.7" text-anchor="end">150</text>
+        <line x1="48" x2="790" y1="146.3" y2="146.3" stroke="var(--line)" stroke-width="1"/>
+        <text x="40" y="150.3" text-anchor="end">200</text>
+        <line x1="48" x2="790" y1="102.9" y2="102.9" stroke="var(--line)" stroke-width="1"/>
+        <text x="40" y="106.9" text-anchor="end">250</text>
+        <line x1="48" x2="790" y1="59.4" y2="59.4" stroke="var(--line)" stroke-width="1"/>
+        <text x="40" y="63.4" text-anchor="end">300</text>
+        <line x1="48" x2="790" y1="16.0" y2="16.0" stroke="var(--line)" stroke-width="1"/>
+        <text x="40" y="20.0" text-anchor="end">350</text>
+<text x="48.0" y="340" text-anchor="middle">1</text><text x="109.8" y="340" text-anchor="middle">2</text><text x="171.7" y="340" text-anchor="middle">3</text><text x="233.5" y="340" text-anchor="middle">4</text><text x="295.3" y="340" text-anchor="middle">5</text><text x="357.2" y="340" text-anchor="middle">6</text><text x="419.0" y="340" text-anchor="middle">7</text><text x="480.8" y="340" text-anchor="middle">8</text><text x="542.7" y="340" text-anchor="middle">9</text><text x="604.5" y="340" text-anchor="middle">10</text><text x="666.3" y="340" text-anchor="middle">11</text><text x="728.2" y="340" text-anchor="middle">12</text><text x="790.0" y="340" text-anchor="middle">13</text>
+        <text x="419.0" y="356" text-anchor="middle">Hand</text>
+        <path d="M48.0,320.0 L109.8,311.3 L171.7,311.3 L233.5,311.3 L295.3,250.5 L357.2,246.2 L419.0,194.1 L480.8,194.1 L542.7,185.4 L604.5,185.4 L666.3,137.6 L728.2,133.3 L790.0,124.6" fill="none" stroke="var(--blue)" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+        <circle cx="790.0" cy="124.6" r="5" fill="var(--blue)"/>
+        <path d="M48.0,307.0 L109.8,241.8 L171.7,224.5 L233.5,215.8 L295.3,211.4 L357.2,202.7 L419.0,202.7 L480.8,133.3 L542.7,59.4 L604.5,46.4 L666.3,37.7 L728.2,29.0 L790.0,20.3" fill="none" stroke="var(--red)" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+        <circle cx="790.0" cy="20.3" r="5" fill="var(--red)"/>
+        <path d="M48.0,315.7 L109.8,315.7 L171.7,241.8 L233.5,168.0 L295.3,168.0 L357.2,168.0 L419.0,163.7 L480.8,94.2 L542.7,94.2 L604.5,24.7 L666.3,24.7 L728.2,24.7 L790.0,24.7" fill="none" stroke="var(--green)" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+        <circle cx="790.0" cy="24.7" r="5" fill="var(--green)"/>
+        <text class="lbl" x="800" y="24.3" style="fill:var(--red)">Peyton 345</text>
+        <text class="lbl" x="800" y="40.3" style="fill:var(--green)">Liz 340</text>
+        <text class="lbl" x="800" y="128.6" style="fill:var(--blue)">Justin 225</text>
+      </svg>
+    </div>
+  </section>
+
+  <section id="awards">
+    <div class="sechead">
+      <h2>Game awards</h2>
+      <p>Pulled straight from the score sheet.</p>
+    </div>
+    <div class="awards">
+      <div class="award" style="--c:var(--green)"><div class="big num">7</div><h3>Out the door</h3><p>Liz finished 7 of 13 hands with zero points.</p></div>
+      <div class="award" style="--c:var(--red)"><div class="big num">5</div><h3>Hot streak</h3><p>Peyton made 5 phases in a row, Phases 2 through 6 in hands 3 to 7.</p></div>
+      <div class="award" style="--c:var(--blue)"><div class="big num">70</div><h3>Steady hands</h3><p>Justin&#39;s worst single hand was 70 points.</p></div>
+      <div class="award" style="--c:var(--yellow-ink)"><div class="big num">85</div><h3>Ouch</h3><p>Biggest single hand of the game (Peyton, Liz ×2).</p></div>
+    </div>
+  </section>
+
+  <section id="rules">
+    <div class="sechead">
+      <h2>League rules</h2>
+      <p>The quick version. Keep the full cheat sheet handy at the table.</p>
+    </div>
+    <div class="rules">
+      <div>
+        <h3>The 10 phases</h3>
+        <ol class="phaselist">
+          <li><span class="n" style="background:var(--red)">1</span><span>2 sets of 3</span></li>
+          <li><span class="n" style="background:var(--blue)">2</span><span>1 set of 3 + 1 run of 4</span></li>
+          <li><span class="n" style="background:var(--green)">3</span><span>1 set of 4 + 1 run of 4</span></li>
+          <li><span class="n" style="background:var(--yellow);color:#1b1d24">4</span><span>1 run of 7</span></li>
+          <li><span class="n" style="background:var(--red)">5</span><span>1 run of 8</span></li>
+          <li><span class="n" style="background:var(--blue)">6</span><span>1 run of 9</span></li>
+          <li><span class="n" style="background:var(--green)">7</span><span>2 sets of 4</span></li>
+          <li><span class="n" style="background:var(--yellow);color:#1b1d24">8</span><span>7 cards of one color</span></li>
+          <li><span class="n" style="background:var(--red)">9</span><span>1 set of 5 + 1 set of 2</span></li>
+          <li><span class="n" style="background:var(--blue)">10</span><span>1 set of 5 + 1 set of 3</span></li>
+        </ol>
+      </div>
+      <div>
+        <h3>Scoring</h3>
+        <table class="scoretable num">
+          <tbody>
+            <tr><td>Cards 1–9</td><td>5 each</td></tr>
+            <tr><td>Cards 10–12</td><td>10 each</td></tr>
+            <tr><td>Skip</td><td>15</td></tr>
+            <tr><td>Wild</td><td>25</td></tr>
+          </tbody>
+        </table>
+        <ul>
+          <li><strong>Set:</strong> same number, any colors.</li>
+          <li><strong>Run:</strong> numbers in order, any colors. No wrapping from 12 to 1.</li>
+          <li>One phase per hand. Lay it down, then hit on any laid-down phase.</li>
+          <li>First to finish Phase 10 wins. Ties go to fewer points.</li>
+        </ul>
+        <div class="links">
+          <a class="btn primary" href="../index.html">Open the scorekeeper</a>
+          <a class="btn" href="https://claude.ai/artifact/T88gAY8HPyUFbGo6iuraC7">Full cheat sheet</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">The official site of the Kitchen Table Phase 10 League. A family league, not affiliated with Mattel, which owns the Phase 10 name.</div>
+</footer>
+</body>
+</html>
