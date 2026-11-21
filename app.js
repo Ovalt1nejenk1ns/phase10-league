@@ -1,6 +1,62 @@
 // Phase 10 Scorekeeper: all state lives in localStorage, so a refresh mid-game loses nothing.
 "use strict";
 
+// ------------------------------------------------------------------ auto-save to the Game Night server
+// When this page is served by game-night-server, every save also goes to its SQLite database.
+// On GitHub Pages there's no /api, the health check fails, and this quietly does nothing.
+const Sync = (() => {
+  let enabled = false, sending = false;
+  const queue = new Map(), failed = new Map();   // keyed by game id, so two games never overwrite each other
+  const ready = fetch("/api/health", { cache: "no-store" })
+    .then((r) => r.ok && (r.headers.get("content-type") || "").includes("json"))
+    .then((ok) => { enabled = Boolean(ok); if (enabled) show("Connected to the game server"); })
+    .catch(() => {});
+
+  function show(text, bad = false) {
+    const el = document.getElementById("syncStatus");
+    if (el) { el.textContent = text; el.style.color = bad ? "var(--red, #c00)" : ""; }
+  }
+
+  // Each save sends the whole game, so a later save also fixes any earlier one that failed.
+  async function save(id, gameType, state) {
+    await ready;
+    if (!enabled || !id) return;
+    queue.set(id, JSON.stringify({ game_type: gameType, state }));  // newer state for the same game replaces older
+    flush();
+  }
+
+  async function flush() {
+    if (sending) return;            // the running loop picks up anything queued meanwhile
+    sending = true;
+    while (queue.size) {
+      const [id, body] = queue.entries().next().value;
+      queue.delete(id);
+      try {
+        const r = await fetch(`/api/games/${encodeURIComponent(id)}`, {
+          method: "PUT", headers: { "Content-Type": "application/json" }, body,
+        });
+        if (!r.ok) throw new Error((await r.json().catch(() => ({}))).error || `HTTP ${r.status}`);
+        failed.delete(id);
+        show("✓ Saved to the game server");
+      } catch (err) {
+        failed.set(id, body);
+        show(`Not saved to the server yet (${err.message}). It will retry on the next save.`, true);
+      }
+    }
+    sending = false;
+  }
+
+  const retry = () => { failed.forEach((body, id) => queue.has(id) || queue.set(id, body)); flush(); };
+  window.addEventListener("online", retry);
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) retry(); });
+
+  return { save, ready: () => ready.then(() => enabled) };
+})();
+
+// crypto.randomUUID() only works on https or localhost. Over http://klisby it's undefined,
+// so build an id from the time plus random letters instead.
+const newGameId = (prefix) => `${prefix}-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`;
+
 const STORE_KEY = "phase10-league:current";
 const PALETTE = ["var(--blue)", "var(--red)", "var(--green)", "var(--orange)", "var(--purple)", "var(--teal)"];
 const PHASES = [
@@ -10,6 +66,7 @@ const PHASES = [
 
 // state = { label, players: ["Justin", ...], hands: [[{made, pts}, ...one per player], ...] }
 let state = load();
+if (state && !state.id) state.id = newGameId("p10"); // games started before auto-save
 let draft = [];          // the hand being entered: [{made, pts}] per player
 
 const $ = (id) => document.getElementById(id);
@@ -21,6 +78,7 @@ function load() {
   try { return JSON.parse(localStorage.getItem(STORE_KEY)) || null; } catch { return null; }
 }
 function save() {
+  if (state) Sync.save(state.id, "phase10", state);
   try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch { toast("Couldn't save in this browser. Export a CSV to be safe."); }
 }
 
@@ -65,7 +123,7 @@ function startGame() {
   if (names.length < 2) return ($("setupErr").textContent = "Add at least two players.");
   if (new Set(lower).size !== names.length) return ($("setupErr").textContent = "Two players have the same name. Add an initial to tell them apart.");
   const today = new Date().toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
-  state = { label: $("gameLabel").value.trim() || today, players: names, hands: [] };
+  state = { id: newGameId("p10"), label: $("gameLabel").value.trim() || today, players: names, hands: [] };
   save();
   render();
 }
